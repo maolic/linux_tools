@@ -61,12 +61,16 @@ check_pid(){
 Update_Shell(){
 	sh_new_ver=$(wget --no-check-certificate -qO- -t1 -T3 "https://raw.githubusercontent.com/maolic/linux_tools/main/install_nginx.sh"|grep 'xc_ver="'|awk -F "=" '{print $NF}'|sed 's/\"//g'|head -1) && sh_new_type="github"
 	[[ -z ${sh_new_ver} ]] && echo -e "${Error} 无法链接到 服务器 !" && exit 0
-	wget -N --no-check-certificate "https://raw.githubusercontent.com/maolic/linux_tools/main/install_nginx.sh" && chmod +x install_nginx.sh
-	echo -e "脚本已更新为最新版本[ ${sh_new_ver} ] !(注意：因为更新方式为直接覆盖当前运行的脚本，所以可能下面会提示一些报错，无视即可)" && exit 0
+	if [[ ${sh_new_ver} = ${xc_ver} ]]; then
+		echo -e "当前版本已是最新[ ${sh_new_ver} ]，无需更新" && exit 0
+	else
+		wget -N --no-check-certificate "https://raw.githubusercontent.com/maolic/linux_tools/main/install_nginx.sh" && chmod +x install_nginx.sh
+		echo -e "脚本已更新为最新版本[ ${sh_new_ver} ] !(注意：因为更新方式为直接覆盖当前运行的脚本，所以可能下面会提示一些报错，无视即可)" && exit 0
+	fi
 }
 Download_Nginx(){
 	nginx_url="http://nginx.org/download/nginx-"${nginx_ver}".tar.gz"
-	echo -e "当前nginx下载链接："${nginx_url}
+#	echo -e "当前nginx下载链接："${nginx_url}
 	wget ${nginx_url}
 	[[ ! -s "nginx-${nginx_ver}.tar.gz" ]] && echo -e "${Error} Nginx 源码文件下载失败 !" && rm -rf "nginx-${nginx_ver}.tar.gz" && exit 1
 	tar -xzvf nginx-${nginx_ver}.tar.gz && cd nginx-${nginx_ver}
