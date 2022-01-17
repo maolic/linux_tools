@@ -5,7 +5,7 @@
 #	Version: 1.0.1
 #	Author: MLC
 #=================================================
-xc_ver="1.0.0"
+xc_ver="1.0.1"
 nginx_ver="1.21.5"
 file="/usr/local/nginx"
 conf="/usr/local/nginx/conf/nginx.conf"
