@@ -99,7 +99,7 @@ Install_Nginx(){
 	Add_firewall443
 	echo -e "${Info} 重启防火墙..."
 	firewall-cmd --reload
-	echo -e "${Info} 正在启动 ..."
+	echo -e "${Info} 正在启动 ...\n（如有防火墙错误提示可忽略）"
 	Start_Nginx
 }
 Uninstall_Nginx(){
@@ -115,7 +115,7 @@ Uninstall_Nginx(){
 		Remove_firewall80
 		echo -e "${Info} 设置 防火墙443端口..."
 		Remove_firewall443
-		echo && echo "Nginx 卸载完成 !" && echo
+		echo && echo "Nginx 卸载完成 !（如有防火墙错误提示可忽略）" && echo
 	else
 		echo && echo "卸载已取消..." && echo
 	fi
