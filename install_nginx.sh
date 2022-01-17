@@ -82,10 +82,10 @@ Download_Nginx(){
 Installation_Dependency(){
 	if [[ ${release} == "centos" ]]; then
 		yum update -y
-		yum install -y gcc pcre-devel zlib-devel openssl openssl-devel vim wget
+		yum install -y gcc pcre-devel zlib-devel openssl openssl-devel make vim
 	elif [[ ${release} == "debian" || ${release} == "ubuntu" ]]; then
 		sudo apt-get update -y
-		sudo apt-get install -y gcc zlib* pcre* libpcre3 libpcre3-dev openssl libssl-dev libperl-dev make vim wget
+		sudo apt-get install -y gcc zlib* pcre* libpcre3 libpcre3-dev openssl libssl-dev libperl-dev make vim
 	else
 		echo -e "${Error} 本脚本不支持本系统，请在CentOS 7+上执行 !" && exit 1
 	fi
