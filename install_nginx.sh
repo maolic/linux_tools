@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #=================================================
-#	System Required: CentOS 7 +
+#	System Required: CentOS 7+, Debian 9+, Ubuntu 16+
 #	Description: Nginx_1.21.5 一键安装脚本
-#	Version: 1.0.1
+#	Version: 1.0.2
 #	Author: MLC
 #=================================================
-xc_ver="1.0.1"
+xc_ver="1.0.2"
 nginx_ver="1.21.5"
 file="/usr/local/nginx"
 conf="/usr/local/nginx/conf/nginx.conf"
@@ -38,7 +38,7 @@ check_sys(){
 clear
 echo
 echo "#############################################################"
-echo "# System Required: CentOS 7 +                               #"
+echo "# System Required: CentOS 7+, Debian 9+, Ubuntu 16+         #"
 echo "# Description: Nginx_1.21.5 一键安装脚本                    #"
 echo "# Author: MLC <mlc@tom.com>                                 #"
 echo "# Github: https://github.com/maolic                         #"
@@ -80,8 +80,12 @@ Download_Nginx(){
 	cd .. && cd ..
 }
 Installation_Dependency(){
-	if [[ ${release} = "centos" ]]; then
-		yum -y install gcc pcre-devel zlib-devel openssl openssl-devel vim wget
+	if [[ ${release} == "centos" ]]; then
+		yum update -y
+		yum install -y gcc pcre-devel zlib-devel openssl openssl-devel vim wget
+	elif [[ ${release} == "debian" || ${release} == "ubuntu" ]]; then
+		sudo apt-get update -y
+		sudo apt-get install -y gcc zlib* pcre* libpcre3 libpcre3-dev openssl libssl-dev libperl-dev make vim wget
 	else
 		echo -e "${Error} 本脚本不支持本系统，请在CentOS 7+上执行 !" && exit 1
 	fi
@@ -93,12 +97,14 @@ Install_Nginx(){
 	Installation_Dependency
 	echo -e "${Info} 开始下载/安装 Nginx(init)..."
 	Download_Nginx
-	echo -e "${Info} 设置 防火墙80端口..."
-	Add_firewall80
-	echo -e "${Info} 设置 防火墙443端口..."
-	Add_firewall443
-	echo -e "${Info} 重启防火墙..."
-	firewall-cmd --reload
+	if [[ ${release} == "centos" ]]; then
+		echo -e "${Info} 设置 防火墙80端口..."
+		Add_firewall80
+		echo -e "${Info} 设置 防火墙443端口..."
+		Add_firewall443
+		echo -e "${Info} 重启防火墙..."
+		firewall-cmd --reload
+	fi
 	echo -e "${Info} 正在启动 ...\n（如有防火墙错误提示可忽略）"
 	Start_Nginx
 }
@@ -111,10 +117,12 @@ Uninstall_Nginx(){
 	if [[ ${unyn} == [Yy] ]]; then
 		Stop_Nginx
 		rm -rf /usr/local/nginx
-		echo -e "${Info} 设置 防火墙80端口..."
-		Remove_firewall80
-		echo -e "${Info} 设置 防火墙443端口..."
-		Remove_firewall443
+		if [[ ${release} == "centos" ]]; then
+			echo -e "${Info} 设置 防火墙80端口..."
+			Remove_firewall80
+			echo -e "${Info} 设置 防火墙443端口..."
+			Remove_firewall443
+		fi
 		echo && echo "Nginx 卸载完成 !（如有防火墙错误提示可忽略）" && echo
 	else
 		echo && echo "卸载已取消..." && echo
