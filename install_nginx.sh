@@ -97,15 +97,8 @@ Install_Nginx(){
 	Installation_Dependency
 	echo -e "${Info} 开始下载/安装 Nginx(init)..."
 	Download_Nginx
-	if [[ ${release} == "centos" ]]; then
-		echo -e "${Info} 设置 防火墙80端口..."
-		Add_firewall80
-		echo -e "${Info} 设置 防火墙443端口..."
-		Add_firewall443
-		echo -e "${Info} 重启防火墙..."
-		firewall-cmd --reload
-	fi
-	echo -e "${Info} 正在启动 ...\n（若有防火墙错误提示可忽略，如firewall-cmd: command not found）"
+	
+	echo -e "${Info} 正在启动 ..."
 	Start_Nginx
 }
 Install_Nginx_Custom(){
@@ -145,15 +138,7 @@ Install_Nginx_Custom(){
 	make install
 	cd .. && cd ..
 	
-	if [[ ${release} == "centos" ]]; then
-		echo -e "${Info} 设置 防火墙80端口..."
-		Add_firewall80
-		echo -e "${Info} 设置 防火墙443端口..."
-		Add_firewall443
-		echo -e "${Info} 重启防火墙..."
-		firewall-cmd --reload
-	fi
-	echo -e "${Info} 正在启动 ...\n（若有防火墙错误提示可忽略，如firewall-cmd: command not found）"
+	echo -e "${Info} 正在启动 ..."
 	Start_Nginx
 }
 Update_Nginx(){
@@ -198,13 +183,8 @@ Uninstall_Nginx(){
 	if [[ ${unyn} == [Yy] ]]; then
 		Stop_Nginx
 		rm -rf /usr/local/nginx
-		if [[ ${release} == "centos" ]]; then
-			echo -e "${Info} 设置 防火墙80端口..."
-			Remove_firewall80
-			echo -e "${Info} 设置 防火墙443端口..."
-			Remove_firewall443
-		fi
-		echo && echo " Nginx 卸载完成 !（若有防火墙错误提示可忽略，如firewall-cmd: command not found）" && echo
+		
+		echo && echo " Nginx 卸载完成 !" && echo
 	else
 		echo && echo " 卸载已取消..." && echo
 	fi
@@ -264,18 +244,6 @@ View_Error_Log(){
 	[[ ! -e ${error_log} ]] && echo -e "${Error} Nginx 错误日志文件不存在 !" && exit 1
 	echo && echo -e "${Tip} 按 ${Red_font_prefix}Ctrl+C${Font_color_suffix} 终止查看日志" && echo -e "如果需要查看完整日志内容，请用 ${Red_font_prefix}cat ${error_log}${Font_color_suffix} 命令。" && echo
 	tail -f ${error_log}
-}
-Add_firewall80(){
-	firewall-cmd --add-port=80/tcp --permanent
-}
-Add_firewall443(){
-	firewall-cmd --add-port=443/tcp --permanent
-}
-Remove_firewall80(){
-	firewall-cmd --remove-port=80/tcp --permanent
-}
-Remove_firewall443(){
-	firewall-cmd --remove-port=443/tcp --permanent
 }
 Set_Nginx_Config(){
 	[[ ! -e ${conf} ]] && echo -e "${Error} Nginx 配置文件不存在 !" && exit 1
