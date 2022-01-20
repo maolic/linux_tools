@@ -2,10 +2,10 @@
 #=================================================
 #	System Required: CentOS 7+, Debian 9+, Ubuntu 16+
 #	Description: Nginx_1.21.5 一键安装脚本
-#	Version: 1.0.2
+#	Version: 1.0.3
 #	Author: MLC
 #=================================================
-xc_ver="1.0.2"
+xc_ver="1.0.3"
 nginx_ver="1.21.5"
 file="/usr/local/nginx"
 conf="/usr/local/nginx/conf/nginx.conf"
@@ -62,10 +62,10 @@ Update_Shell(){
 	sh_new_ver=$(wget --no-check-certificate -qO- -t1 -T3 "https://raw.githubusercontent.com/maolic/linux_tools/main/install_nginx.sh"|grep 'xc_ver="'|awk -F "=" '{print $NF}'|sed 's/\"//g'|head -1) && sh_new_type="github"
 	[[ -z ${sh_new_ver} ]] && echo -e "${Error} 无法链接到 服务器 !" && exit 0
 	if [[ ${sh_new_ver} = ${xc_ver} ]]; then
-		echo -e "当前版本已是最新[ ${sh_new_ver} ]，无需更新" && exit 0
+		echo -e " 当前版本已是最新[ ${sh_new_ver} ]，无需更新" && exit 0
 	else
 		wget -N --no-check-certificate "https://raw.githubusercontent.com/maolic/linux_tools/main/install_nginx.sh" && chmod +x install_nginx.sh
-		echo -e "脚本已更新为最新版本[ ${sh_new_ver} ] !(注意：因为更新方式为直接覆盖当前运行的脚本，所以可能下面会提示一些报错，无视即可)" && exit 0
+		echo -e " 脚本已更新为最新版本[ ${sh_new_ver} ] !(注意：因为更新方式为直接覆盖当前运行的脚本，所以可能下面会提示一些报错，无视即可)" && exit 0
 	fi
 }
 Download_Nginx(){
@@ -105,12 +105,93 @@ Install_Nginx(){
 		echo -e "${Info} 重启防火墙..."
 		firewall-cmd --reload
 	fi
-	echo -e "${Info} 正在启动 ...\n（如有防火墙错误提示可忽略）"
+	echo -e "${Info} 正在启动 ...\n（若有防火墙错误提示可忽略，如firewall-cmd: command not found）"
 	Start_Nginx
+}
+Install_Nginx_Custom(){
+	check_root
+	[[ -e ${file} ]] && echo -e "${Error} Nginx 已安装，请检查 !" && exit 1
+	echo
+	echo -e "${Tip} 请输入正确的版本号，如${nginx_ver}\n 可参阅 http://nginx.org/en/download.html"
+	echo
+	read -e -p " 请输入需要安装的版本(默认: ${nginx_ver}):" version
+	echo " 输入安装版本：$version"
+
+	if [[ ${version} == null || ${version} == "" || ${version} == " " ]]; then
+		version="${nginx_ver}"
+	fi
+	
+	echo
+	echo -e "${Tip} 请输入正确的扩展模块，每个模块间用空格分隔，留空则默认不安装其他模块，如："
+	echo -e " --with-http_stub_status_module --with-http_ssl_module"
+	echo
+	echo -e " 可参阅 https://blog.csdn.net/qq_41036832/article/details/80695981"
+	echo
+	read -e -p " 请输入需要安装的扩展模块:" modules
+	echo " 即将安装的扩展模块：$modules"
+	
+	echo -e "${Info} 开始下载自定义 Nginx 版本..."
+	nginx_url="http://nginx.org/download/nginx-"${version}".tar.gz"
+	wget ${nginx_url}
+	[[ ! -s "nginx-${version}.tar.gz" ]] && echo -e "${Error} Nginx 源码文件下载失败 !" && echo " 请检查版本输入是否正确或网络设置是否正确 ！" && rm -rf "nginx-${version}.tar.gz" && exit 1
+	
+	echo -e "${Info} 开始安装/配置 依赖..."
+	Installation_Dependency
+	
+	echo -e "${Info} 开始安装自定义 Nginx 版本..."
+	tar -xzvf nginx-${version}.tar.gz && cd nginx-${version}
+	./configure ${modules}
+	make
+	make install
+	cd .. && cd ..
+	
+	if [[ ${release} == "centos" ]]; then
+		echo -e "${Info} 设置 防火墙80端口..."
+		Add_firewall80
+		echo -e "${Info} 设置 防火墙443端口..."
+		Add_firewall443
+		echo -e "${Info} 重启防火墙..."
+		firewall-cmd --reload
+	fi
+	echo -e "${Info} 正在启动 ...\n（若有防火墙错误提示可忽略，如firewall-cmd: command not found）"
+	Start_Nginx
+}
+Update_Nginx(){
+	check_installed_status "un"
+	echo -e "${Info} 开始备份原 Nginx..."
+	sleep 1s
+	bak_name=$(date +%Y%m%d%H%M)
+	tar -zcvf /usr/local/nginx.${bak_name}.bak.tar.gz /usr/local/nginx
+	modules_info=$(echo $(/usr/local/nginx/sbin/nginx -V 2>&1)|awk -F ':' '{print $3}')
+	sleep 1s
+	echo
+	echo -e "${Info} 原Nginx模块信息：\n ${modules_info}"
+	sleep 1s
+	
+	echo -e "${Info} 开始下载 Nginx-${nginx_ver}..."
+	nginx_url="http://nginx.org/download/nginx-"${nginx_ver}".tar.gz"
+	wget ${nginx_url}
+	[[ ! -s "nginx-${nginx_ver}.tar.gz" ]] && echo -e "${Error} Nginx 源码文件下载失败 !" && rm -rf "nginx-${nginx_ver}.tar.gz" && exit 1
+	tar -xzvf nginx-${nginx_ver}.tar.gz && cd nginx-${nginx_ver}
+	./configure ${modules_info}
+	make
+	echo -e "${Info} 正在停止 Nginx..."
+	Stop_Nginx
+	sleep 1s
+	cp $(pwd)/objs/nginx /usr/local/nginx/sbin/
+	
+	sleep 1s
+	echo -e "${Info} 正在重启 Nginx..."
+	Start_Nginx
+	echo
+	echo -e "${Info} 更新成功，原Nginx打包备份文件：/usr/local/nginx.${bak_name}.bak.tar.gz"
+	echo
+	echo -e " 当前版本信息："
+	View_Nginx_Info
 }
 Uninstall_Nginx(){
 	check_installed_status "un"
-	echo "确定要卸载 Nginx ? (y/N)"
+	echo " 确定要卸载 Nginx ? (y/N)"
 	echo
 	read -e -p "(默认: n):" unyn
 	[[ -z ${unyn} ]] && unyn="n"
@@ -123,9 +204,9 @@ Uninstall_Nginx(){
 			echo -e "${Info} 设置 防火墙443端口..."
 			Remove_firewall443
 		fi
-		echo && echo "Nginx 卸载完成 !（如有防火墙错误提示可忽略）" && echo
+		echo && echo " Nginx 卸载完成 !（若有防火墙错误提示可忽略，如firewall-cmd: command not found）" && echo
 	else
-		echo && echo "卸载已取消..." && echo
+		echo && echo " 卸载已取消..." && echo
 	fi
 }
 View_Config(){
@@ -207,21 +288,29 @@ Set_Nginx_Config(){
 		Reload_Nginx
 	fi
 }
+View_Nginx_Info(){
+	check_installed_status
+	${file}/sbin/nginx -V
+}
 echo -e " Nginx_${nginx_ver} 一键安装脚本 ${Red_font_prefix}[v${xc_ver}]${Font_color_suffix}
   
- ${Green_font_prefix}0.${Font_color_suffix} 脚本 检查更新
+ ${Green_font_prefix} 0.${Font_color_suffix} 脚本 检查更新
 ————————————
- ${Green_font_prefix}1.${Font_color_suffix} 安装 Nginx
- ${Green_font_prefix}2.${Font_color_suffix} 卸载 Nginx
+ ${Green_font_prefix} 1.${Font_color_suffix} 安装 Nginx
+ ${Green_font_prefix} 2.${Font_color_suffix} 卸载 Nginx
 ————————————
- ${Green_font_prefix}3.${Font_color_suffix} 启动 Nginx
- ${Green_font_prefix}4.${Font_color_suffix} 停止 Nginx
- ${Green_font_prefix}5.${Font_color_suffix} 重启 Nginx
- ${Green_font_prefix}6.${Font_color_suffix} 重载 Nginx
+ ${Green_font_prefix} 3.${Font_color_suffix} 启动 Nginx
+ ${Green_font_prefix} 4.${Font_color_suffix} 停止 Nginx
+ ${Green_font_prefix} 5.${Font_color_suffix} 重启 Nginx
+ ${Green_font_prefix} 6.${Font_color_suffix} 重载 Nginx
 ————————————
- ${Green_font_prefix}7.${Font_color_suffix} 修改 配置文件
- ${Green_font_prefix}8.${Font_color_suffix} 查看 访问日志
- ${Green_font_prefix}9.${Font_color_suffix} 查看 错误日志
+ ${Green_font_prefix} 7.${Font_color_suffix} 修改 配置文件
+ ${Green_font_prefix} 8.${Font_color_suffix} 查看 访问日志
+ ${Green_font_prefix} 9.${Font_color_suffix} 查看 错误日志
+ ${Green_font_prefix}10.${Font_color_suffix} 查看 Nginx版本与编译信息
+————————————
+ ${Green_font_prefix}11.${Font_color_suffix} 安装 自定义Nginx版本
+ ${Green_font_prefix}12.${Font_color_suffix} 升级 Nginx版本
 ————————————" && echo
 if [[ -e ${file} ]]; then
 	check_pid
@@ -234,7 +323,7 @@ else
 	echo -e " 当前状态: ${Red_font_prefix}未安装${Font_color_suffix}"
 fi
 echo
-read -e -p " 请输入数字 [0-8]:" num
+read -e -p " 请输入数字 [0-12]:" num
 case "$num" in
 	0)
 	Update_Shell
@@ -267,7 +356,17 @@ case "$num" in
 	9)
 	View_Error_Log
 	;;
+	10)
+	View_Nginx_Info
+	;;
+	11)
+	check_sys
+	Install_Nginx_Custom
+	;;
+	12)
+	Update_Nginx
+	;;
 	*)
-	echo "请输入正确数字 [0-8]"
+	echo "请输入正确数字 [0-12]"
 	;;
 esac
