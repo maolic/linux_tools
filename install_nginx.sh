@@ -174,10 +174,10 @@ Install_Nginx_Custom(){
 }
 Update_Nginx(){
 	check_installed_status "un"
-	echo -e "${Info} 开始备份原 Nginx..."
+	echo -e "${Info} 开始备份原 Nginx（不备份logs目录）..."
 	sleep 1s
 	bak_name=$(date +%Y%m%d%H%M)
-	tar -zcvf /usr/local/nginx.${bak_name}.bak.tar.gz /usr/local/nginx
+	tar -zcvf /usr/local/nginx.${bak_name}.bak.tar.gz /usr/local/nginx --exclude=nginx/logs/*
 	modules_info=$(echo $(/usr/local/nginx/sbin/nginx -V 2>&1)|awk -F ':' '{print $3}')
 	sleep 1s
 	echo
