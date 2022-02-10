@@ -2,11 +2,11 @@
 #=================================================
 #	System Required: CentOS 7+, Debian 9+, Ubuntu 16+
 #	Description: Nginx_1.21.5 一键安装脚本
-#	Version: 1.0.3
+#	Version: 1.0.4
 #	Author: MLC
 #=================================================
-xc_ver="1.0.3"
-nginx_ver="1.21.5"
+xc_ver="1.0.4"
+nginx_ver="1.21.6"
 file="/usr/local/nginx"
 conf="/usr/local/nginx/conf/nginx.conf"
 access_log="/usr/local/nginx/logs/access.log"
@@ -39,7 +39,7 @@ clear
 echo
 echo "#############################################################"
 echo "# System Required: CentOS 7+, Debian 9+, Ubuntu 16+         #"
-echo "# Description: Nginx_1.21.5 一键安装脚本                    #"
+echo "# Description: Nginx_1.21.5 一键安装脚本                      #"
 echo "# Author: MLC <mlc@tom.com>                                 #"
 echo "# Github: https://github.com/maolic                         #"
 echo "#############################################################"
@@ -104,40 +104,71 @@ Install_Nginx(){
 Install_Nginx_Custom(){
 	check_root
 	[[ -e ${file} ]] && echo -e "${Error} Nginx 已安装，请检查 !" && exit 1
-	echo
-	echo -e "${Tip} 请输入正确的版本号，如${nginx_ver}\n 可参阅 http://nginx.org/en/download.html"
-	echo
-	read -e -p " 请输入需要安装的版本(默认: ${nginx_ver}):" version
-	echo " 输入安装版本：$version"
+	echo -e "是否选择从离线包安装，离线安装需提前下载后上传"
 
-	if [[ ${version} == null || ${version} == "" || ${version} == " " ]]; then
-		version="${nginx_ver}"
+	read -e -p "(默认: n):" unyn
+	[[ -z ${unyn} ]] && unyn="n"
+	if [[ ${unyn} == [Yy] ]]; then
+    echo
+    read -e -p " 请输入完整离线安装包路径和名称:" offline_path
+    [[ ! -s "$offline_path" ]] && echo -e "${Error} Nginx 源码文件不存在，安装失败 !" && exit 1
+    echo " 即将安装的包路径：$offline_path"
+    echo
+    echo -e "${Tip} 请输入正确的扩展模块，每个模块间用空格分隔，留空则默认不安装其他模块，如："
+    echo -e " --with-http_stub_status_module --with-http_ssl_module"
+    echo
+    echo -e " 可参阅 https://blog.csdn.net/qq_41036832/article/details/80695981"
+    echo
+    read -e -p " 请输入需要安装的扩展模块:" modules
+    echo " 即将安装的扩展模块：$modules"
+
+    echo -e "${Info} 开始安装/配置 依赖..."
+    Installation_Dependency
+    echo -e "${Info} 开始安装自定义 Nginx 版本..."
+    mkdir nginx_offline_install
+    tar -zxvf ${offline_path} -C nginx_offline_install/  --strip-components 1 && cd nginx_offline_install
+    ./configure ${modules}
+    make
+    make install
+    cd .. && cd ..
+
+	else
+    echo
+    echo -e "${Tip} 请输入正确的版本号，如${nginx_ver}\n 可参阅 http://nginx.org/en/download.html"
+    echo
+    read -e -p " 请输入需要安装的版本(默认: ${nginx_ver}):" version
+    echo " 输入安装版本：$version"
+
+    if [[ ${version} == null || ${version} == "" || ${version} == " " ]]; then
+      version="${nginx_ver}"
+    fi
+
+    echo
+    echo -e "${Tip} 请输入正确的扩展模块，每个模块间用空格分隔，留空则默认不安装其他模块，如："
+    echo -e " --with-http_stub_status_module --with-http_ssl_module"
+    echo
+    echo -e " 可参阅 https://blog.csdn.net/qq_41036832/article/details/80695981"
+    echo
+    read -e -p " 请输入需要安装的扩展模块:" modules
+    echo " 即将安装的扩展模块：$modules"
+
+    echo -e "${Info} 开始下载自定义 Nginx 版本..."
+    nginx_url="http://nginx.org/download/nginx-"${version}".tar.gz"
+    wget ${nginx_url}
+    [[ ! -s "nginx-${version}.tar.gz" ]] && echo -e "${Error} Nginx 源码文件下载失败 !" && echo " 请检查版本输入是否正确或网络设置是否正确 ！" && rm -rf "nginx-${version}.tar.gz" && exit 1
+
+    echo -e "${Info} 开始安装/配置 依赖..."
+    Installation_Dependency
+
+    echo -e "${Info} 开始安装自定义 Nginx 版本..."
+    tar -xzvf nginx-${version}.tar.gz && cd nginx-${version}
+    ./configure ${modules}
+    make
+    make install
+    cd .. && cd ..
+
 	fi
-	
-	echo
-	echo -e "${Tip} 请输入正确的扩展模块，每个模块间用空格分隔，留空则默认不安装其他模块，如："
-	echo -e " --with-http_stub_status_module --with-http_ssl_module"
-	echo
-	echo -e " 可参阅 https://blog.csdn.net/qq_41036832/article/details/80695981"
-	echo
-	read -e -p " 请输入需要安装的扩展模块:" modules
-	echo " 即将安装的扩展模块：$modules"
-	
-	echo -e "${Info} 开始下载自定义 Nginx 版本..."
-	nginx_url="http://nginx.org/download/nginx-"${version}".tar.gz"
-	wget ${nginx_url}
-	[[ ! -s "nginx-${version}.tar.gz" ]] && echo -e "${Error} Nginx 源码文件下载失败 !" && echo " 请检查版本输入是否正确或网络设置是否正确 ！" && rm -rf "nginx-${version}.tar.gz" && exit 1
-	
-	echo -e "${Info} 开始安装/配置 依赖..."
-	Installation_Dependency
-	
-	echo -e "${Info} 开始安装自定义 Nginx 版本..."
-	tar -xzvf nginx-${version}.tar.gz && cd nginx-${version}
-	./configure ${modules}
-	make
-	make install
-	cd .. && cd ..
-	
+
 	echo -e "${Info} 正在启动 ..."
 	Start_Nginx
 }
