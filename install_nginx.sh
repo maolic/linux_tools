@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #=================================================
 #	System Required: CentOS 7+, Debian 9+, Ubuntu 16+
-#	Description: Nginx_1.21.5 一键安装脚本
+#	Description: Nginx_1.21.6 一键安装脚本
 #	Version: 1.0.4
 #	Author: MLC
 #=================================================
@@ -39,7 +39,7 @@ clear
 echo
 echo "#############################################################"
 echo "# System Required: CentOS 7+, Debian 9+, Ubuntu 16+         #"
-echo "# Description: Nginx_1.21.5 一键安装脚本                      #"
+echo "# Description: Nginx_1.21.6 一键安装脚本                    #"
 echo "# Author: MLC <mlc@tom.com>                                 #"
 echo "# Github: https://github.com/maolic                         #"
 echo "#############################################################"
