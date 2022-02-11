@@ -26,6 +26,7 @@ bash install_nginx.sh
 - 安装路径：/usr/local/java
 
 请先前往Oracle官网下载对应版本JDK压缩包后上传至服务器，再运行此脚本。
+下载地址：https://www.oracle.com/java/technologies/downloads/
 ```
 wget https://raw.githubusercontent.com/maolic/linux_tools/main/install_java.sh
 source install_java.sh
