@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #=================================================
 #	System Required: CentOS 7+, Debian 9+, Ubuntu 16+
-#	Description: Nginx_1.21.6 一键安装脚本
-#	Version: 1.0.4
+#	Description: Nginx 一键安装脚本
+#	Version: 1.1.0
 #	Author: MLC
 #=================================================
-xc_ver="1.0.4"
+xc_ver="1.1.0"
 nginx_ver="1.21.6"
 file="/usr/local/nginx"
 conf="/usr/local/nginx/conf/nginx.conf"
@@ -39,7 +39,7 @@ clear
 echo
 echo "#############################################################"
 echo "# System Required: CentOS 7+, Debian 9+, Ubuntu 16+         #"
-echo "# Description: Nginx_1.21.6 一键安装脚本                    #"
+echo "# Description: Nginx 一键安装脚本                           #"
 echo "# Author: MLC <mlc@tom.com>                                 #"
 echo "# Github: https://github.com/maolic                         #"
 echo "#############################################################"
@@ -69,11 +69,26 @@ Update_Shell(){
 	fi
 }
 Download_Nginx(){
-	nginx_url="http://nginx.org/download/nginx-"${nginx_ver}".tar.gz"
+  version="${nginx_ver}"
+
+  echo
+  echo -e "${Info} 是否选择从线上获取最新版本安装？\n 否将安装脚本默认版本：${nginx_ver}"
+  read -e -p "(默认: n):" unyn
+  [[ -z ${unyn} ]] && unyn="n"
+  if [[ ${unyn} == [Yy] ]]; then
+    echo -e "${Info} 联网获取最新Nginx版本 ..."
+    sleep 1s
+    nginx_new_ver=$(curl http://nginx.org/en/CHANGES | grep 'Changes with nginx'|awk -F " " '{print $4}' | head -1)
+    echo -e "${Info} 当前最新发布版本 ${nginx_new_ver}"
+    sleep 1s
+    version=${nginx_new_ver}
+  fi
+
+	nginx_url="http://nginx.org/download/nginx-"${version}".tar.gz"
 #	echo -e "当前nginx下载链接："${nginx_url}
 	wget ${nginx_url}
-	[[ ! -s "nginx-${nginx_ver}.tar.gz" ]] && echo -e "${Error} Nginx 源码文件下载失败 !" && rm -rf "nginx-${nginx_ver}.tar.gz" && exit 1
-	tar -xzvf nginx-${nginx_ver}.tar.gz && cd nginx-${nginx_ver}
+	[[ ! -s "nginx-${version}.tar.gz" ]] && echo -e "${Error} Nginx 源码文件下载失败 !" && rm -rf "nginx-${version}.tar.gz" && exit 1
+	tar -xzvf nginx-${version}.tar.gz && cd nginx-${version}
 	./configure --with-http_stub_status_module --with-http_ssl_module
 	make
 	make install
@@ -104,7 +119,7 @@ Install_Nginx(){
 Install_Nginx_Custom(){
 	check_root
 	[[ -e ${file} ]] && echo -e "${Error} Nginx 已安装，请检查 !" && exit 1
-	echo -e "是否选择从离线包安装，离线安装需提前下载后上传"
+	echo -e "${Info} 是否选择从离线包安装，离线安装需提前下载后上传"
 
 	read -e -p "(默认: n):" unyn
 	[[ -z ${unyn} ]] && unyn="n"
@@ -133,11 +148,25 @@ Install_Nginx_Custom(){
     cd .. && cd ..
 
 	else
+    version="${nginx_ver}"
     echo
-    echo -e "${Tip} 请输入正确的版本号，如${nginx_ver}\n 可参阅 http://nginx.org/en/download.html"
-    echo
-    read -e -p " 请输入需要安装的版本(默认: ${nginx_ver}):" version
-    echo " 输入安装版本：$version"
+	  echo -e "是否选择从线上获取最新版本安装？"
+    read -e -p "(默认: n):" unyn
+    [[ -z ${unyn} ]] && unyn="n"
+    if [[ ${unyn} == [Yy] ]]; then
+      echo -e "${Info} 联网获取最新Nginx版本 ..."
+      sleep 1s
+      nginx_new_ver=$(curl http://nginx.org/en/CHANGES | grep 'Changes with nginx'|awk -F " " '{print $4}' | head -1)
+      echo -e "${Info} 当前最新发布版本 ${nginx_new_ver}"
+      sleep 1s
+      version=${nginx_new_ver}
+	  else
+      echo
+      echo -e "${Tip} 请输入需要安装的版本号，如${nginx_ver}\n 可参阅 http://nginx.org/en/download.html"
+      echo
+      read -e -p " 请输入需要安装的版本(默认: ${nginx_ver}):" version
+      echo " 输入安装版本：$version"
+    fi
 
     if [[ ${version} == null || ${version} == "" || ${version} == " " ]]; then
       version="${nginx_ver}"
@@ -173,7 +202,25 @@ Install_Nginx_Custom(){
 	Start_Nginx
 }
 Update_Nginx(){
+	check_root
 	check_installed_status "un"
+  version="${nginx_ver}"
+
+  echo
+  echo -e "${Info} 是否选择从线上获取最新版本安装？\n 否将安装脚本默认版本：${nginx_ver}"
+  read -e -p "(默认: n):" unyn
+  [[ -z ${unyn} ]] && unyn="n"
+  if [[ ${unyn} == [Yy] ]]; then
+    echo -e "${Info} 联网获取最新Nginx版本 ..."
+    sleep 1s
+    nginx_new_ver=$(curl http://nginx.org/en/CHANGES | grep 'Changes with nginx'|awk -F " " '{print $4}' | head -1)
+    echo -e "${Info} 当前最新发布版本 ${nginx_new_ver}"
+    sleep 1s
+    version=${nginx_new_ver}
+  fi
+
+	sleep 1s
+	echo
 	echo -e "${Info} 开始备份原 Nginx（不备份logs目录）..."
 	sleep 1s
 	bak_name=$(date +%Y%m%d%H%M)
@@ -184,11 +231,11 @@ Update_Nginx(){
 	echo -e "${Info} 原Nginx模块信息：\n ${modules_info}"
 	sleep 1s
 	
-	echo -e "${Info} 开始下载 Nginx-${nginx_ver}..."
-	nginx_url="http://nginx.org/download/nginx-"${nginx_ver}".tar.gz"
+	echo -e "${Info} 开始下载 Nginx-${version}..."
+	nginx_url="http://nginx.org/download/nginx-"${version}".tar.gz"
 	wget ${nginx_url}
-	[[ ! -s "nginx-${nginx_ver}.tar.gz" ]] && echo -e "${Error} Nginx 源码文件下载失败 !" && rm -rf "nginx-${nginx_ver}.tar.gz" && exit 1
-	tar -xzvf nginx-${nginx_ver}.tar.gz && cd nginx-${nginx_ver}
+	[[ ! -s "nginx-${version}.tar.gz" ]] && echo -e "${Error} Nginx 源码文件下载失败 !" && rm -rf "nginx-${version}.tar.gz" && exit 1
+	tar -xzvf nginx-${version}.tar.gz && cd nginx-${version}
 	./configure ${modules_info}
 	make
 	echo -e "${Info} 正在停止 Nginx..."
