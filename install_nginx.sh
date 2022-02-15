@@ -2,10 +2,10 @@
 #=================================================
 #	System Required: CentOS 7+, Debian 9+, Ubuntu 16+
 #	Description: Nginx 一键安装脚本
-#	Version: 1.1.0
+#	Version: 1.1.1
 #	Author: MLC
 #=================================================
-xc_ver="1.1.0"
+xc_ver="1.1.1"
 nginx_ver="1.21.6"
 file="/usr/local/nginx"
 conf="/usr/local/nginx/conf/nginx.conf"
@@ -204,8 +204,18 @@ Install_Nginx_Custom(){
 Update_Nginx(){
 	check_root
 	check_installed_status "un"
-  version="${nginx_ver}"
 
+  echo
+  echo -e "${Tip} 请注意，大版本的升级可能会发生配置文件配置失效情况（如https的配置规则变化），请在大版本升级后确认是否部署成功！"
+  echo
+	echo "是否继续升级 ? (Y/n)"
+  read -e -p "(默认: n):" unyn
+  [[ -z ${unyn} ]] && unyn="n"
+  if [[ ${unyn} == [Yy] ]]; then
+		exit 1
+	fi
+
+  version="${nginx_ver}"
   echo
   echo -e "${Info} 是否选择从线上获取最新版本安装？\n 否将安装脚本默认版本：${nginx_ver}"
   read -e -p "(默认: n):" unyn
