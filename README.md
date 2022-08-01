@@ -31,3 +31,17 @@ bash install_nginx.sh
 wget https://raw.githubusercontent.com/maolic/linux_tools/main/install_java.sh
 source install_java.sh
 ```
+
+### Wget一键升级
+
+- 支持系统：CentOS 7+
+- 测试系统：CentOS 7.9
+- 安装路径：/usr/local/bin/wget
+
+CentOS 7 自带的 Wget 版本太老，简单写了个一键升级。与其说是一键升级，不如说是把原来的卸载再装个新的。
+脚本默认卸载旧版本并安装最新的版本。
+Wget 下载地址：https://ftp.gnu.org/gnu/wget/
+```
+wget https://raw.githubusercontent.com/maolic/linux_tools/main/update_wget.sh
+bash update_wget.sh
+```

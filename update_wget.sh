@@ -36,7 +36,7 @@ update_wget(){
 	cd wget-latest/${child_dir}
 	./configure --with-ssl=openssl
 	make && make install
-	echo -e "${Info} 更新命令执行成功，请查看当前版本信息"
+	echo -e "${Info} 更新命令执行成功，请查看当前版本信息，如未生效请尝试重新连接或者重启服务器。"
 }
 version_wget(){
 	wget -V
