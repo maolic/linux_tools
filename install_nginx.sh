@@ -2,11 +2,12 @@
 #=================================================
 #	System Required: CentOS 7+, Debian 9+, Ubuntu 16+
 #	Description: Nginx 一键安装脚本
-#	Version: 1.1.1
+#	Version: 1.1.2
 #	Author: MLC
+# Update Date: 2023年2月14日
 #=================================================
-xc_ver="1.1.1"
-nginx_ver="1.21.6"
+xc_ver="1.1.2"
+nginx_ver="1.23.3"
 file="/usr/local/nginx"
 conf="/usr/local/nginx/conf/nginx.conf"
 access_log="/usr/local/nginx/logs/access.log"
@@ -211,7 +212,7 @@ Update_Nginx(){
 	echo "是否继续升级 ? (Y/n)"
   read -e -p "(默认: n):" unyn
   [[ -z ${unyn} ]] && unyn="n"
-  if [[ ${unyn} == [Yy] ]]; then
+  if [[ ${unyn} == [Nn] ]]; then
 		exit 1
 	fi
 
