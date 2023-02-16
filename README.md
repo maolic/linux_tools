@@ -5,6 +5,9 @@
 - 支持系统：CentOS 7+, Debian 9+, Ubuntu 16+
 - 安装路径：/usr/local/nginx
 
+**2023年2月16日更新** v1.2.0
+1. 新增离线包升级功能。
+
 **2023年2月14日更新** v1.1.2
 1. 修复升级选项相反问题。
 2. 更新 Nginx 的默认安装版本。
@@ -17,7 +20,8 @@
  1. 支持自定义版本和模块安装
  2. 支持升级至1.21.5版本
 
-目前支持CentOS 7+, Debian 9+, Ubuntu 16+系统，请确保服务器80和443端口不被占用。
+目前支持CentOS 7+, Debian 9+, Ubuntu 16+系统，请确保服务器80和443端口不被占用，安装后可通过修改配置文件更改端口，
+如显示安装成功但是无法通过 IP 访问，请尝试访问 127.0.0.1 以及检查服务器防火墙、安全组等配置。
 ```
 wget https://raw.githubusercontent.com/maolic/linux_tools/main/install_nginx.sh
 bash install_nginx.sh

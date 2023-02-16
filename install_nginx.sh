@@ -2,11 +2,11 @@
 #=================================================
 #	System Required: CentOS 7+, Debian 9+, Ubuntu 16+
 #	Description: Nginx 一键安装脚本
-#	Version: 1.1.2
+#	Version: 1.2.0
 #	Author: MLC
-# Update Date: 2023年2月14日
+# Update Date: 2023年2月16日
 #=================================================
-xc_ver="1.1.2"
+xc_ver="1.2.0"
 nginx_ver="1.23.3"
 file="/usr/local/nginx"
 conf="/usr/local/nginx/conf/nginx.conf"
@@ -263,6 +263,57 @@ Update_Nginx(){
 	echo -e " 当前版本信息："
 	View_Nginx_Info
 }
+Update_Nginx_Custom(){
+	check_root
+	check_installed_status "un"
+
+  echo
+  echo -e "${Tip} 请注意，跨版本的升级可能会发生配置文件配置失效情况（如https的配置规则变化），请在升级后确认是否部署成功！"
+  echo
+	echo "是否继续升级 ? (Y/n)"
+  read -e -p "(默认: n):" unyn
+  [[ -z ${unyn} ]] && unyn="n"
+  if [[ ${unyn} == [Nn] ]]; then
+		exit 1
+	fi
+
+  echo
+  read -e -p " 请输入完整离线安装包路径和名称:" offline_path
+  [[ ! -s "$offline_path" ]] && echo -e "${Error} Nginx 源码文件不存在，安装失败 !" && exit 1
+  echo " 即将安装的包路径：$offline_path"
+  echo
+
+	sleep 1s
+	echo
+	echo -e "${Info} 开始备份原 Nginx（不备份logs目录）..."
+	sleep 1s
+	bak_name=$(date +%Y%m%d%H%M)
+	tar -zcvf /usr/local/nginx.${bak_name}.bak.tar.gz /usr/local/nginx --exclude=nginx/logs/*
+	modules_info=$(echo $(/usr/local/nginx/sbin/nginx -V 2>&1)|awk -F ':' '{print $3}')
+	sleep 1s
+	echo
+	echo -e "${Info} 原Nginx模块信息：\n ${modules_info}"
+	sleep 1s
+
+  echo -e "${Info} 开始离线更新 Nginx..."
+  mkdir nginx_offline_update
+	tar -zxvf ${offline_path} -C nginx_offline_update/  --strip-components 1 && cd nginx_offline_update
+	./configure ${modules_info}
+	make
+	echo -e "${Info} 正在停止 Nginx..."
+	Stop_Nginx
+	sleep 1s
+	cp $(pwd)/objs/nginx /usr/local/nginx/sbin/
+
+	sleep 1s
+	echo -e "${Info} 正在重启 Nginx..."
+	Start_Nginx
+	echo
+	echo -e "${Info} 更新成功，原Nginx打包备份文件：/usr/local/nginx.${bak_name}.bak.tar.gz"
+	echo
+	echo -e " 当前版本信息："
+	View_Nginx_Info
+}
 Uninstall_Nginx(){
 	check_installed_status "un"
 	echo " 确定要卸载 Nginx ? (y/N)"
@@ -368,6 +419,7 @@ echo -e " Nginx_${nginx_ver} 一键安装脚本 ${Red_font_prefix}[v${xc_ver}]${
 ————————————
  ${Green_font_prefix}11.${Font_color_suffix} 安装 自定义Nginx版本
  ${Green_font_prefix}12.${Font_color_suffix} 升级 Nginx版本
+ ${Green_font_prefix}13.${Font_color_suffix} 升级 离线更新 Nginx
 ————————————" && echo
 if [[ -e ${file} ]]; then
 	check_pid
@@ -380,7 +432,7 @@ else
 	echo -e " 当前状态: ${Red_font_prefix}未安装${Font_color_suffix}"
 fi
 echo
-read -e -p " 请输入数字 [0-12]:" num
+read -e -p " 请输入数字 [0-13]:" num
 case "$num" in
 	0)
 	Update_Shell
@@ -422,6 +474,9 @@ case "$num" in
 	;;
 	12)
 	Update_Nginx
+	;;
+	13)
+	Update_Nginx_Custom
 	;;
 	*)
 	echo "请输入正确数字 [0-12]"
