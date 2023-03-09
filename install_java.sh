@@ -2,10 +2,9 @@
 #=================================================
 #	System Required: CentOS 7+, Debian 9+, Ubuntu 16+
 #	Description: Java JDK 离线一键安装脚本
-#	Version: 1.0
 #	Author: MLC
 #=================================================
-version="1.0"
+version="1.1"
 path="/usr/local/java"
 Green_font_prefix="\033[32m" && Red_font_prefix="\033[31m" && Green_background_prefix="\033[42;37m" && Red_background_prefix="\033[41;37m" && Font_color_suffix="\033[0m"
 Info="${Green_font_prefix}[信息]${Font_color_suffix}"
@@ -17,8 +16,18 @@ echo "#############################################################"
 echo "# System Required: CentOS 7+, Debian 9+, Ubuntu 16+         #"
 echo "# Description: Java JDK 离线一键安装脚本                    #"
 echo "# Author: MLC <mlc@tom.com>                                 #"
+echo "# Version: ${version}                                              #"
 echo "# Github: https://github.com/maolic                         #"
 echo "#############################################################"
+echo
+result=$(command -v java| wc -w)
+if [[ ${result} == 1 ]]; then
+	echo -e "${Tip} Java 环境已安装!"
+	echo
+  echo '—————— 版本信息 ——————'
+	java -version
+  echo '—————— 版本信息 ——————' && exit 1
+fi
 echo
 [[ $EUID != 0 ]] && echo -e "${Error} 当前非ROOT账号(或没有ROOT权限)，无法继续操作，请更换ROOT账号或使用 ${Green_background_prefix}sudo su${Font_color_suffix} 命令获取临时ROOT权限（执行后可能会提示输入当前账号的密码）。" && exit 1
 echo
