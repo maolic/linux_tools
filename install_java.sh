@@ -22,8 +22,8 @@ echo "#############################################################"
 echo
 result=$(command -v java| wc -w)
 if [[ ${result} == 1 ]]; then
-	echo -e "${Tip} Java 环境已安装!"
-	echo
+  echo -e "${Tip} Java 环境已安装!"
+  echo
   echo '—————— 版本信息 ——————'
 	java -version
   echo '—————— 版本信息 ——————' && exit 1
@@ -43,7 +43,7 @@ echo 'export JAVA_HOME='${path} >> /etc/profile
 echo 'export JRE_HOME=${JAVA_HOME}/jre' >> /etc/profile
 echo 'export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib' >> /etc/profile
 echo 'export PATH=${JAVA_HOME}/bin:$PATH' >> /etc/profile
-sleep 1s
+sleep 3s
 source /etc/profile
 
 echo

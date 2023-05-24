@@ -2,12 +2,12 @@
 #=================================================
 #	System Required: CentOS 7+, Debian 9+, Ubuntu 16+
 #	Description: Nginx 一键安装脚本
-#	Version: 1.2.0
+#	Version: 1.2.1
 #	Author: MLC
-# Update Date: 2023年2月16日
+# Update Date: 2023年5月24日
 #=================================================
-xc_ver="1.2.0"
-nginx_ver="1.23.3"
+xc_ver="1.2.1"
+nginx_ver="1.25.0"
 file="/usr/local/nginx"
 conf="/usr/local/nginx/conf/nginx.conf"
 access_log="/usr/local/nginx/logs/access.log"
@@ -31,7 +31,7 @@ check_sys(){
 		release="debian"
 	elif cat /proc/version | grep -q -E -i "ubuntu"; then
 		release="ubuntu"
-	elif cat /proc/version | grep -q -E -i "centos|red hat|redhat"; then
+	elif cat /proc/version | grep -q -E -i "centos|red hat|redhat|Kylin"; then
 		release="centos"
     fi
 	#bit=`uname -m`
@@ -99,11 +99,14 @@ Installation_Dependency(){
 	if [[ ${release} == "centos" ]]; then
 		yum update -y
 		yum install -y gcc pcre-devel zlib-devel openssl openssl-devel make vim
-	elif [[ ${release} == "debian" || ${release} == "ubuntu" ]]; then
+	elif [[ ${release} == "debian" ]]; then
+		apt-get update -y
+		apt-get install -y gcc zlib* pcre* libpcre3 libpcre3-dev openssl libssl-dev libperl-dev make vim
+	elif [[ ${release} == "ubuntu" ]]; then
 		sudo apt-get update -y
 		sudo apt-get install -y gcc zlib* pcre* libpcre3 libpcre3-dev openssl libssl-dev libperl-dev make vim
 	else
-		echo -e "${Error} 本脚本不支持本系统，请在CentOS 7+上执行 !" && exit 1
+		echo -e "${Error} 本脚本不支持本系统，请在 CentOS 7+ / Debian 9+ / Ubuntu 16+ 上执行 !" && exit 1
 	fi
 }
 Install_Nginx(){
@@ -321,7 +324,7 @@ Uninstall_Nginx(){
 	read -e -p "(默认: n):" unyn
 	[[ -z ${unyn} ]] && unyn="n"
 	if [[ ${unyn} == [Yy] ]]; then
-		Stop_Nginx
+		Stop_Nginx_No_Exit
 		rm -rf /usr/local/nginx
 		
 		echo && echo " Nginx 卸载完成 !" && echo
@@ -357,6 +360,12 @@ Stop_Nginx(){
 	check_pid
 	[[ -z ${PID} ]] && echo -e "${Error} Nginx 没有运行，请检查 !" && exit 1
 	/usr/local/nginx/sbin/nginx -s stop
+}
+Stop_Nginx_No_Exit(){
+	check_installed_status
+	check_pid
+	[[ -n ${PID} ]] && /usr/local/nginx/sbin/nginx -s stop
+
 }
 Restart_Nginx(){
 	check_installed_status
