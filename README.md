@@ -5,6 +5,17 @@
 - 支持系统：CentOS 7+, Debian 9+, Ubuntu 16+
 - 安装路径：/usr/local/nginx
 
+目前支持CentOS 7+, Debian 9+, Ubuntu 16+系统，请确保服务器80和443端口不被占用，安装后可通过修改配置文件更改端口，
+如显示安装成功但是无法通过 IP 访问，请尝试访问 127.0.0.1 以及检查服务器防火墙、安全组等配置。
+```
+wget https://raw.githubusercontent.com/maolic/linux_tools/main/install_nginx.sh
+bash install_nginx.sh
+```
+
+**2024年10月11日更新** v1.2.2
+1. 新增创建 systemd 服务和软连接选项
+2. 更新 Nginx 默认版本为 1.27.2
+
 **2023年5月25日更新** v1.2.1
 1. 修复停止状态下无法卸载情况
 2. 新增 Kylin 并增加 Debian 下未安装 sudo 兼容性
@@ -24,13 +35,6 @@
 **2022年1月20日更新** v1.0.3
  1. 支持自定义版本和模块安装
  2. 支持升级至1.21.5版本
-
-目前支持CentOS 7+, Debian 9+, Ubuntu 16+系统，请确保服务器80和443端口不被占用，安装后可通过修改配置文件更改端口，
-如显示安装成功但是无法通过 IP 访问，请尝试访问 127.0.0.1 以及检查服务器防火墙、安全组等配置。
-```
-wget https://raw.githubusercontent.com/maolic/linux_tools/main/install_nginx.sh
-bash install_nginx.sh
-```
 
 ### JDK一键安装
 

@@ -2,12 +2,12 @@
 #=================================================
 #	System Required: CentOS 7+, Debian 9+, Ubuntu 16+
 #	Description: Nginx 一键安装脚本
-#	Version: 1.2.1
+#	Version: 1.2.2
 #	Author: MLC
-# Update Date: 2023年5月24日
+# Update Date: 2024年10月11日
 #=================================================
-xc_ver="1.2.1"
-nginx_ver="1.25.0"
+xc_ver="1.2.2"
+nginx_ver="1.27.2"
 file="/usr/local/nginx"
 conf="/usr/local/nginx/conf/nginx.conf"
 access_log="/usr/local/nginx/logs/access.log"
@@ -409,6 +409,40 @@ View_Nginx_Info(){
 	check_installed_status
 	${file}/sbin/nginx -V
 }
+Create_Systemctl(){
+  SERVICE_FILE="/etc/systemd/system/nginx.service"
+
+  cat << EOF > $SERVICE_FILE
+[Unit]
+Description=A high performance web server and a reverse proxy server
+After=network.target remote-fs.target nss-lookup.target
+
+[Service]
+Type=forking
+PIDFile=/usr/local/nginx/logs/nginx.pid
+ExecStartPre=/usr/local/nginx/sbin/nginx -t
+ExecStart=/usr/local/nginx/sbin/nginx
+ExecReload=/usr/local/nginx/sbin/nginx -s reload
+ExecStop=/usr/local/nginx/sbin/nginx -s stop
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+  # 检查服务文件是否创建成功
+  if [ ! -f $SERVICE_FILE ]; then
+    echo "创建失败请检测系统日志"
+    exit 1
+  else
+    systemctl daemon-reload
+    echo "Nginx systemd service 创建成功，可以使用 systemctl 控制了！"
+  fi
+
+  # 创建软连接
+  ln -s /usr/local/nginx/sbin/nginx /usr/sbin/nginx
+}
+
 echo -e " Nginx_${nginx_ver} 一键安装脚本 ${Red_font_prefix}[v${xc_ver}]${Font_color_suffix}
   
  ${Green_font_prefix} 0.${Font_color_suffix} 脚本 检查更新
@@ -429,6 +463,7 @@ echo -e " Nginx_${nginx_ver} 一键安装脚本 ${Red_font_prefix}[v${xc_ver}]${
  ${Green_font_prefix}11.${Font_color_suffix} 安装 自定义Nginx版本
  ${Green_font_prefix}12.${Font_color_suffix} 升级 Nginx版本
  ${Green_font_prefix}13.${Font_color_suffix} 升级 离线更新 Nginx
+ ${Green_font_prefix}14.${Font_color_suffix} 创建 systemd 服务和软连接
 ————————————" && echo
 if [[ -e ${file} ]]; then
 	check_pid
@@ -441,7 +476,7 @@ else
 	echo -e " 当前状态: ${Red_font_prefix}未安装${Font_color_suffix}"
 fi
 echo
-read -e -p " 请输入数字 [0-13]:" num
+read -e -p " 请输入数字 [0-14]:" num
 case "$num" in
 	0)
 	Update_Shell
@@ -487,7 +522,10 @@ case "$num" in
 	13)
 	Update_Nginx_Custom
 	;;
+	14)
+	Create_Systemctl
+	;;
 	*)
-	echo "请输入正确数字 [0-12]"
+	echo "请输入正确数字 [0-14]"
 	;;
 esac
