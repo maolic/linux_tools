@@ -2,11 +2,11 @@
 #=================================================
 #	System Required: CentOS 7+, Debian 9+, Ubuntu 16+
 #	Description: Nginx 一键安装脚本
-#	Version: 1.2.2
+#	Version: 1.2.3
 #	Author: MLC
-# Update Date: 2024年10月11日
+# Update Date: 2024年11月13日
 #=================================================
-xc_ver="1.2.2"
+xc_ver="1.2.3"
 nginx_ver="1.27.2"
 file="/usr/local/nginx"
 conf="/usr/local/nginx/conf/nginx.conf"
@@ -98,13 +98,13 @@ Download_Nginx(){
 Installation_Dependency(){
 	if [[ ${release} == "centos" ]]; then
 		yum update -y
-		yum install -y gcc pcre-devel zlib-devel openssl openssl-devel make vim
+		yum install -y gcc pcre-devel zlib-devel openssl openssl-devel make vim curl
 	elif [[ ${release} == "debian" ]]; then
 		apt-get update -y
-		apt-get install -y gcc zlib* pcre* libpcre3 libpcre3-dev openssl libssl-dev libperl-dev make vim
+		apt-get install -y gcc zlib* pcre* libpcre3 libpcre3-dev openssl libssl-dev libperl-dev make vim curl
 	elif [[ ${release} == "ubuntu" ]]; then
 		sudo apt-get update -y
-		sudo apt-get install -y gcc zlib* pcre* libpcre3 libpcre3-dev openssl libssl-dev libperl-dev make vim
+		sudo apt-get install -y gcc zlib* pcre* libpcre3 libpcre3-dev openssl libssl-dev libperl-dev make vim curl
 	else
 		echo -e "${Error} 本脚本不支持本系统，请在 CentOS 7+ / Debian 9+ / Ubuntu 16+ 上执行 !" && exit 1
 	fi
